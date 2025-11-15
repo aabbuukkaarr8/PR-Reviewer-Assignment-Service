@@ -1,4 +1,4 @@
-.PHONY: help build run test clean docker-build docker-up docker-down docker-logs fmt deps migrate-up migrate-down
+.PHONY: help build run test clean docker-build docker-up docker-down docker-logs fmt deps migrate-up migrate-down ensure-test-db
 
 BINARY_NAME=apiserver
 BINARY_PATH=./cmd/apiserver
@@ -28,9 +28,29 @@ run: ## Запустить сервис локально
 	@echo "$(GREEN)Запуск сервиса...$(NC)"
 	$(GO) run $(BINARY_PATH) -config-path=$(CONFIG_PATH)
 
-test: ## Запустить тесты
+test: ensure-test-db ## Запустить тесты
 	@echo "$(GREEN)Запуск тестов...$(NC)"
 	$(GO) test -v ./...
+
+ensure-test-db: ## Создать тестовую БД, если её нет
+	@echo "$(GREEN)Проверка тестовой БД...$(NC)"
+	@result=$$($(DOCKER_COMPOSE) exec -T db psql -U appuser -d postgres -tc "SELECT COUNT(*) FROM pg_database WHERE datname = 'PReviewer_test'" 2>/dev/null | tr -d ' \n' | grep -o '[0-9]'); \
+	if [ "$$result" = "1" ]; then \
+		echo "$(GREEN)Тестовая БД PReviewer_test уже существует$(NC)"; \
+	else \
+		echo "$(GREEN)Создание тестовой БД PReviewer_test...$(NC)"; \
+		create_result=$$($(DOCKER_COMPOSE) exec -T db psql -U appuser -d postgres -c 'CREATE DATABASE "PReviewer_test";' 2>&1); \
+		exit_code=$$?; \
+		if echo "$$create_result" | grep -q "already exists"; then \
+			echo "$(GREEN)Тестовая БД PReviewer_test уже существует$(NC)"; \
+		elif [ $$exit_code -eq 0 ]; then \
+			echo "$(GREEN)Тестовая БД PReviewer_test создана$(NC)"; \
+		else \
+			echo "$(YELLOW)Не удалось создать тестовую БД. Убедитесь, что docker-compose запущен$(NC)"; \
+			echo "$$create_result"; \
+			exit 1; \
+		fi; \
+	fi
 
 test-coverage: ## Запустить тесты с покрытием
 	@echo "$(GREEN)Запуск тестов с покрытием...$(NC)"

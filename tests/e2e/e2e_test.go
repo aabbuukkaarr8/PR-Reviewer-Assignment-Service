@@ -41,7 +41,8 @@ func TestMain(m *testing.M) {
 func setup() {
 	databaseURL := os.Getenv("TEST_DATABASE_URL")
 	if databaseURL == "" {
-		databaseURL = "postgres://appuser:secret@localhost:5432/PReviewer?sslmode=disable"
+		// Используем отдельную тестовую БД, чтобы не затереть данные основной БД
+		databaseURL = "postgres://appuser:secret@localhost:5432/PReviewer_test?sslmode=disable"
 	}
 
 	var err error
@@ -177,8 +178,13 @@ func TestE2E_CreateTeamAndGetTeam(t *testing.T) {
 		t.Fatalf("Failed to decode response: %v", err)
 	}
 
-	if result["team_name"] != "backend" {
-		t.Errorf("Expected team_name 'backend', got %v", result["team_name"])
+	team, ok := result["team"].(map[string]interface{})
+	if !ok {
+		t.Fatalf("Expected 'team' in response, got %v", result)
+	}
+
+	if team["team_name"] != "backend" {
+		t.Errorf("Expected team_name 'backend', got %v", team["team_name"])
 	}
 }
 
