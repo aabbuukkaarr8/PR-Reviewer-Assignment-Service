@@ -1,0 +1,33 @@
+version: "3.8"
+
+services:
+  db:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    container_name: PReviewer
+    environment:
+      POSTGRES_USER:     appuser
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB:       PReviewer
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    restart: always
+    container_name: PRService-API
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgres://appuser:secret@db:5432/PReviewer?sslmode=disable
+
+volumes:
+  pgdata:
