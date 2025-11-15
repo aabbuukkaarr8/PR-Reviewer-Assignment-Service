@@ -3,6 +3,7 @@ package team
 import (
 	"net/http"
 
+	"github.com/aabbuukkaarr8/PRService/internal/api/models"
 	"github.com/gin-gonic/gin"
 )
 
@@ -11,8 +12,11 @@ func (h *Handler) GetTeam(c *gin.Context) {
 	// Получаем team_name из query параметров
 	teamName := c.Query("team_name")
 	if teamName == "" {
-		c.JSON(http.StatusBadRequest, ErrorResponse{
-			Error: ErrorDetail{
+		c.JSON(http.StatusBadRequest, models.ErrorResponse{
+			Error: struct {
+				Code    models.ErrorResponseErrorCode `json:"code"`
+				Message string                        `json:"message"`
+			}{
 				Code:    "INVALID_REQUEST",
 				Message: "team_name parameter is required",
 			},
@@ -25,9 +29,12 @@ func (h *Handler) GetTeam(c *gin.Context) {
 	if err != nil {
 		// Проверяем тип ошибки
 		if err.Error() == "NOT_FOUND" || err.Error() == "team: NOT_FOUND" {
-			c.JSON(http.StatusNotFound, ErrorResponse{
-				Error: ErrorDetail{
-					Code:    "NOT_FOUND",
+			c.JSON(http.StatusNotFound, models.ErrorResponse{
+				Error: struct {
+					Code    models.ErrorResponseErrorCode `json:"code"`
+					Message string                        `json:"message"`
+				}{
+					Code:    models.NOTFOUND,
 					Message: "team not found",
 				},
 			})
@@ -35,8 +42,11 @@ func (h *Handler) GetTeam(c *gin.Context) {
 		}
 
 		// Другие ошибки
-		c.JSON(http.StatusInternalServerError, ErrorResponse{
-			Error: ErrorDetail{
+		c.JSON(http.StatusInternalServerError, models.ErrorResponse{
+			Error: struct {
+				Code    models.ErrorResponseErrorCode `json:"code"`
+				Message string                        `json:"message"`
+			}{
 				Code:    "INTERNAL_ERROR",
 				Message: err.Error(),
 			},
@@ -44,9 +54,11 @@ func (h *Handler) GetTeam(c *gin.Context) {
 		return
 	}
 
-	// Конвертируем service.Team в handler.Team
+	// Конвертируем service.Team в models.Team
 	handlerTeam := toHandlerTeam(resultTeam)
 
 	// Успешный ответ
-	c.JSON(http.StatusOK, handlerTeam)
+	c.JSON(http.StatusOK, GetTeamResponse{
+		Team: handlerTeam,
+	})
 }

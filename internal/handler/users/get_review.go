@@ -3,6 +3,7 @@ package users
 import (
 	"net/http"
 
+	"github.com/aabbuukkaarr8/PRService/internal/api/models"
 	"github.com/aabbuukkaarr8/PRService/internal/service/users"
 	"github.com/gin-gonic/gin"
 )
@@ -11,8 +12,11 @@ import (
 func (h *Handler) GetReview(c *gin.Context) {
 	userID := c.Query("user_id")
 	if userID == "" {
-		c.JSON(http.StatusBadRequest, ErrorResponse{
-			Error: ErrorDetail{
+		c.JSON(http.StatusBadRequest, models.ErrorResponse{
+			Error: struct {
+				Code    models.ErrorResponseErrorCode `json:"code"`
+				Message string                        `json:"message"`
+			}{
 				Code:    "INVALID_REQUEST",
 				Message: "user_id query parameter is required",
 			},
@@ -25,9 +29,12 @@ func (h *Handler) GetReview(c *gin.Context) {
 	if err != nil {
 		// Проверяем тип ошибки
 		if err.Error() == "NOT_FOUND" || err.Error() == "users: NOT_FOUND" {
-			c.JSON(http.StatusNotFound, ErrorResponse{
-				Error: ErrorDetail{
-					Code:    "NOT_FOUND",
+			c.JSON(http.StatusNotFound, models.ErrorResponse{
+				Error: struct {
+					Code    models.ErrorResponseErrorCode `json:"code"`
+					Message string                        `json:"message"`
+				}{
+					Code:    models.NOTFOUND,
 					Message: "user not found",
 				},
 			})
@@ -35,8 +42,11 @@ func (h *Handler) GetReview(c *gin.Context) {
 		}
 
 		// Другие ошибки
-		c.JSON(http.StatusInternalServerError, ErrorResponse{
-			Error: ErrorDetail{
+		c.JSON(http.StatusInternalServerError, models.ErrorResponse{
+			Error: struct {
+				Code    models.ErrorResponseErrorCode `json:"code"`
+				Message string                        `json:"message"`
+			}{
 				Code:    "INTERNAL_ERROR",
 				Message: err.Error(),
 			},
@@ -44,8 +54,8 @@ func (h *Handler) GetReview(c *gin.Context) {
 		return
 	}
 
-	// Конвертируем service.PullRequestShort в handler.PullRequestShort
-	handlerPRs := make([]PullRequestShort, len(resultPRs))
+	// Конвертируем service.PullRequestShort в models.PullRequestShort
+	handlerPRs := make([]models.PullRequestShort, len(resultPRs))
 	for i, pr := range resultPRs {
 		handlerPRs[i] = toHandlerPullRequestShort(pr)
 	}
@@ -57,12 +67,12 @@ func (h *Handler) GetReview(c *gin.Context) {
 	})
 }
 
-// toHandlerPullRequestShort конвертирует service.PullRequestShort в handler.PullRequestShort
-func toHandlerPullRequestShort(s users.PullRequestShort) PullRequestShort {
-	return PullRequestShort{
-		PullRequestID:   s.PullRequestID,
+// toHandlerPullRequestShort конвертирует service.PullRequestShort в models.PullRequestShort
+func toHandlerPullRequestShort(s users.PullRequestShort) models.PullRequestShort {
+	return models.PullRequestShort{
+		PullRequestId:   s.PullRequestID,
 		PullRequestName: s.PullRequestName,
-		AuthorID:        s.AuthorID,
-		Status:          s.Status,
+		AuthorId:        s.AuthorID,
+		Status:          models.PullRequestShortStatus(s.Status),
 	}
 }

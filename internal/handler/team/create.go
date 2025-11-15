@@ -3,6 +3,7 @@ package team
 import (
 	"net/http"
 
+	"github.com/aabbuukkaarr8/PRService/internal/api/models"
 	"github.com/aabbuukkaarr8/PRService/internal/service/team"
 	"github.com/gin-gonic/gin"
 )
@@ -12,8 +13,11 @@ func (h *Handler) CreateTeam(c *gin.Context) {
 
 	// Парсим JSON в структуру handler DTO
 	if err := c.ShouldBindJSON(&req.Team); err != nil {
-		c.JSON(http.StatusBadRequest, ErrorResponse{
-			Error: ErrorDetail{
+		c.JSON(http.StatusBadRequest, models.ErrorResponse{
+			Error: struct {
+				Code    models.ErrorResponseErrorCode `json:"code"`
+				Message string                        `json:"message"`
+			}{
 				Code:    "INVALID_REQUEST",
 				Message: err.Error(),
 			},
@@ -21,7 +25,7 @@ func (h *Handler) CreateTeam(c *gin.Context) {
 		return
 	}
 
-	// Конвертируем handler.Team в service.Team
+	// Конвертируем models.Team в service.Team
 	serviceTeam := toServiceTeam(req.Team)
 
 	// Передаем в service
@@ -29,9 +33,12 @@ func (h *Handler) CreateTeam(c *gin.Context) {
 	if err != nil {
 		// Проверяем тип ошибки
 		if err.Error() == "TEAM_EXISTS" || err.Error() == "team: TEAM_EXISTS" {
-			c.JSON(http.StatusBadRequest, ErrorResponse{
-				Error: ErrorDetail{
-					Code:    "TEAM_EXISTS",
+			c.JSON(http.StatusBadRequest, models.ErrorResponse{
+				Error: struct {
+					Code    models.ErrorResponseErrorCode `json:"code"`
+					Message string                        `json:"message"`
+				}{
+					Code:    models.TEAMEXISTS,
 					Message: "team_name already exists",
 				},
 			})
@@ -39,8 +46,11 @@ func (h *Handler) CreateTeam(c *gin.Context) {
 		}
 
 		// Другие ошибки
-		c.JSON(http.StatusInternalServerError, ErrorResponse{
-			Error: ErrorDetail{
+		c.JSON(http.StatusInternalServerError, models.ErrorResponse{
+			Error: struct {
+				Code    models.ErrorResponseErrorCode `json:"code"`
+				Message string                        `json:"message"`
+			}{
 				Code:    "INTERNAL_ERROR",
 				Message: err.Error(),
 			},
@@ -48,7 +58,7 @@ func (h *Handler) CreateTeam(c *gin.Context) {
 		return
 	}
 
-	// Конвертируем service.Team обратно в handler.Team
+	// Конвертируем service.Team обратно в models.Team
 	handlerTeam := toHandlerTeam(resultTeam)
 
 	c.JSON(http.StatusCreated, CreateTeamResponse{
@@ -56,12 +66,12 @@ func (h *Handler) CreateTeam(c *gin.Context) {
 	})
 }
 
-// toServiceTeam конвертирует handler.Team в service.Team
-func toServiceTeam(h Team) team.Team {
+// toServiceTeam конвертирует models.Team в service.Team
+func toServiceTeam(h models.Team) team.Team {
 	members := make([]team.TeamMember, len(h.Members))
 	for i, m := range h.Members {
 		members[i] = team.TeamMember{
-			UserID:   m.UserID,
+			UserID:   m.UserId,
 			Username: m.Username,
 			IsActive: m.IsActive,
 		}
@@ -73,18 +83,18 @@ func toServiceTeam(h Team) team.Team {
 	}
 }
 
-// toHandlerTeam конвертирует service.Team в handler.Team
-func toHandlerTeam(s team.Team) Team {
-	members := make([]TeamMember, len(s.Members))
+// toHandlerTeam конвертирует service.Team в models.Team
+func toHandlerTeam(s team.Team) models.Team {
+	members := make([]models.TeamMember, len(s.Members))
 	for i, m := range s.Members {
-		members[i] = TeamMember{
-			UserID:   m.UserID,
+		members[i] = models.TeamMember{
+			UserId:   m.UserID,
 			Username: m.Username,
 			IsActive: m.IsActive,
 		}
 	}
 
-	return Team{
+	return models.Team{
 		TeamName: s.TeamName,
 		Members:  members,
 	}

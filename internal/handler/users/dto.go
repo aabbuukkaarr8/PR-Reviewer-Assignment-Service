@@ -1,12 +1,8 @@
 package users
 
-// User соответствует схеме User из OpenAPI
-type User struct {
-	UserID   string `json:"user_id"`
-	Username string `json:"username"`
-	TeamName string `json:"team_name"`
-	IsActive bool   `json:"is_active"`
-}
+import (
+	"github.com/aabbuukkaarr8/PRService/internal/api/models"
+)
 
 // SetIsActiveRequest - запрос на установку флага активности
 type SetIsActiveRequest struct {
@@ -16,30 +12,14 @@ type SetIsActiveRequest struct {
 
 // SetIsActiveResponse - ответ при успешном обновлении
 type SetIsActiveResponse struct {
-	User User `json:"user"`
-}
-
-// PullRequestShort соответствует схеме PullRequestShort из OpenAPI
-type PullRequestShort struct {
-	PullRequestID   string `json:"pull_request_id"`
-	PullRequestName string `json:"pull_request_name"`
-	AuthorID        string `json:"author_id"`
-	Status          string `json:"status"` // OPEN or MERGED
+	User models.User `json:"user"`
 }
 
 // GetReviewResponse - ответ при получении PR'ов пользователя
 type GetReviewResponse struct {
-	UserID       string             `json:"user_id"`
-	PullRequests []PullRequestShort `json:"pull_requests"`
+	UserID       string                    `json:"user_id"`
+	PullRequests []models.PullRequestShort `json:"pull_requests"`
 }
 
 // ErrorResponse соответствует схеме ErrorResponse из OpenAPI
-type ErrorResponse struct {
-	Error ErrorDetail `json:"error"`
-}
-
-// ErrorDetail детали ошибки
-type ErrorDetail struct {
-	Code    string `json:"code"`
-	Message string `json:"message"`
-}
+type ErrorResponse = models.ErrorResponse

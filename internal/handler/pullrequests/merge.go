@@ -3,8 +3,23 @@ package pullrequests
 import (
 	"net/http"
 
+	"github.com/aabbuukkaarr8/PRService/internal/api/models"
+	"github.com/aabbuukkaarr8/PRService/internal/service/pullrequests"
 	"github.com/gin-gonic/gin"
 )
+
+// toHandlerPullRequest конвертирует service.PullRequest в models.PullRequest
+func toHandlerPullRequest(s pullrequests.PullRequest) models.PullRequest {
+	return models.PullRequest{
+		PullRequestId:     s.PullRequestID,
+		PullRequestName:   s.PullRequestName,
+		AuthorId:          s.AuthorID,
+		Status:            models.PullRequestStatus(s.Status),
+		AssignedReviewers: s.AssignedReviewers,
+		CreatedAt:         s.CreatedAt,
+		MergedAt:          s.MergedAt,
+	}
+}
 
 // MergePullRequest обрабатывает POST /pullRequest/merge
 func (h *Handler) MergePullRequest(c *gin.Context) {
@@ -12,8 +27,11 @@ func (h *Handler) MergePullRequest(c *gin.Context) {
 
 	// Парсим JSON в структуру handler DTO
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, ErrorResponse{
-			Error: ErrorDetail{
+		c.JSON(http.StatusBadRequest, models.ErrorResponse{
+			Error: struct {
+				Code    models.ErrorResponseErrorCode `json:"code"`
+				Message string                        `json:"message"`
+			}{
 				Code:    "INVALID_REQUEST",
 				Message: err.Error(),
 			},
@@ -26,9 +44,12 @@ func (h *Handler) MergePullRequest(c *gin.Context) {
 	if err != nil {
 		// Проверяем тип ошибки
 		if err.Error() == "NOT_FOUND" || err.Error() == "pullrequests: NOT_FOUND" {
-			c.JSON(http.StatusNotFound, ErrorResponse{
-				Error: ErrorDetail{
-					Code:    "NOT_FOUND",
+			c.JSON(http.StatusNotFound, models.ErrorResponse{
+				Error: struct {
+					Code    models.ErrorResponseErrorCode `json:"code"`
+					Message string                        `json:"message"`
+				}{
+					Code:    models.NOTFOUND,
 					Message: "PR not found",
 				},
 			})
@@ -36,8 +57,11 @@ func (h *Handler) MergePullRequest(c *gin.Context) {
 		}
 
 		// Другие ошибки
-		c.JSON(http.StatusInternalServerError, ErrorResponse{
-			Error: ErrorDetail{
+		c.JSON(http.StatusInternalServerError, models.ErrorResponse{
+			Error: struct {
+				Code    models.ErrorResponseErrorCode `json:"code"`
+				Message string                        `json:"message"`
+			}{
 				Code:    "INTERNAL_ERROR",
 				Message: err.Error(),
 			},
@@ -45,7 +69,7 @@ func (h *Handler) MergePullRequest(c *gin.Context) {
 		return
 	}
 
-	// Конвертируем service.PullRequest в handler.PullRequest
+	// Конвертируем service.PullRequest в models.PullRequest
 	handlerPR := toHandlerPullRequest(resultPR)
 
 	// Успешный ответ

@@ -3,7 +3,7 @@ package pullrequests
 import (
 	"net/http"
 
-	"github.com/aabbuukkaarr8/PRService/internal/service/pullrequests"
+	"github.com/aabbuukkaarr8/PRService/internal/api/models"
 	"github.com/gin-gonic/gin"
 )
 
@@ -12,8 +12,11 @@ func (h *Handler) CreatePullRequest(c *gin.Context) {
 
 	// Парсим JSON в структуру handler DTO
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, ErrorResponse{
-			Error: ErrorDetail{
+		c.JSON(http.StatusBadRequest, models.ErrorResponse{
+			Error: struct {
+				Code    models.ErrorResponseErrorCode `json:"code"`
+				Message string                        `json:"message"`
+			}{
 				Code:    "INVALID_REQUEST",
 				Message: err.Error(),
 			},
@@ -25,9 +28,12 @@ func (h *Handler) CreatePullRequest(c *gin.Context) {
 	if err != nil {
 		// Проверяем тип ошибки
 		if err.Error() == "PR_EXISTS" || err.Error() == "pullrequests: PR_EXISTS" {
-			c.JSON(http.StatusConflict, ErrorResponse{
-				Error: ErrorDetail{
-					Code:    "PR_EXISTS",
+			c.JSON(http.StatusConflict, models.ErrorResponse{
+				Error: struct {
+					Code    models.ErrorResponseErrorCode `json:"code"`
+					Message string                        `json:"message"`
+				}{
+					Code:    models.PREXISTS,
 					Message: "PR id already exists",
 				},
 			})
@@ -35,9 +41,12 @@ func (h *Handler) CreatePullRequest(c *gin.Context) {
 		}
 
 		if err.Error() == "NOT_FOUND" || err.Error() == "pullrequests: NOT_FOUND" {
-			c.JSON(http.StatusNotFound, ErrorResponse{
-				Error: ErrorDetail{
-					Code:    "NOT_FOUND",
+			c.JSON(http.StatusNotFound, models.ErrorResponse{
+				Error: struct {
+					Code    models.ErrorResponseErrorCode `json:"code"`
+					Message string                        `json:"message"`
+				}{
+					Code:    models.NOTFOUND,
 					Message: "author or team not found",
 				},
 			})
@@ -45,8 +54,11 @@ func (h *Handler) CreatePullRequest(c *gin.Context) {
 		}
 
 		// Другие ошибки
-		c.JSON(http.StatusInternalServerError, ErrorResponse{
-			Error: ErrorDetail{
+		c.JSON(http.StatusInternalServerError, models.ErrorResponse{
+			Error: struct {
+				Code    models.ErrorResponseErrorCode `json:"code"`
+				Message string                        `json:"message"`
+			}{
 				Code:    "INTERNAL_ERROR",
 				Message: err.Error(),
 			},
@@ -54,24 +66,11 @@ func (h *Handler) CreatePullRequest(c *gin.Context) {
 		return
 	}
 
-	// Конвертируем service.PullRequest в handler.PullRequest
+	// Конвертируем service.PullRequest в models.PullRequest
 	handlerPR := toHandlerPullRequest(resultPR)
 
 	// Успешный ответ
 	c.JSON(http.StatusCreated, CreatePullRequestResponse{
 		PR: handlerPR,
 	})
-}
-
-// toHandlerPullRequest конвертирует service.PullRequest в handler.PullRequest
-func toHandlerPullRequest(s pullrequests.PullRequest) PullRequest {
-	return PullRequest{
-		PullRequestID:     s.PullRequestID,
-		PullRequestName:   s.PullRequestName,
-		AuthorID:          s.AuthorID,
-		Status:            s.Status,
-		AssignedReviewers: s.AssignedReviewers,
-		CreatedAt:         s.CreatedAt,
-		MergedAt:          s.MergedAt,
-	}
 }

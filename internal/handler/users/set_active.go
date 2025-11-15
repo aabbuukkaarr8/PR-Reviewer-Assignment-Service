@@ -3,6 +3,7 @@ package users
 import (
 	"net/http"
 
+	"github.com/aabbuukkaarr8/PRService/internal/api/models"
 	"github.com/aabbuukkaarr8/PRService/internal/service/users"
 	"github.com/gin-gonic/gin"
 )
@@ -13,8 +14,11 @@ func (h *Handler) SetIsActive(c *gin.Context) {
 
 	// Парсим JSON в структуру handler DTO
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, ErrorResponse{
-			Error: ErrorDetail{
+		c.JSON(http.StatusBadRequest, models.ErrorResponse{
+			Error: struct {
+				Code    models.ErrorResponseErrorCode `json:"code"`
+				Message string                        `json:"message"`
+			}{
 				Code:    "INVALID_REQUEST",
 				Message: err.Error(),
 			},
@@ -28,9 +32,12 @@ func (h *Handler) SetIsActive(c *gin.Context) {
 	if err != nil {
 		// Проверяем тип ошибки
 		if err.Error() == "NOT_FOUND" || err.Error() == "user: NOT_FOUND" {
-			c.JSON(http.StatusNotFound, ErrorResponse{
-				Error: ErrorDetail{
-					Code:    "NOT_FOUND",
+			c.JSON(http.StatusNotFound, models.ErrorResponse{
+				Error: struct {
+					Code    models.ErrorResponseErrorCode `json:"code"`
+					Message string                        `json:"message"`
+				}{
+					Code:    models.NOTFOUND,
 					Message: "user not found",
 				},
 			})
@@ -38,8 +45,11 @@ func (h *Handler) SetIsActive(c *gin.Context) {
 		}
 
 		// Другие ошибки
-		c.JSON(http.StatusInternalServerError, ErrorResponse{
-			Error: ErrorDetail{
+		c.JSON(http.StatusInternalServerError, models.ErrorResponse{
+			Error: struct {
+				Code    models.ErrorResponseErrorCode `json:"code"`
+				Message string                        `json:"message"`
+			}{
 				Code:    "INTERNAL_ERROR",
 				Message: err.Error(),
 			},
@@ -47,7 +57,7 @@ func (h *Handler) SetIsActive(c *gin.Context) {
 		return
 	}
 
-	// Конвертируем service.User в handler.User
+	// Конвертируем service.User в models.User
 	handlerUser := toHandlerUser(resultUser)
 
 	// Успешный ответ
@@ -56,10 +66,10 @@ func (h *Handler) SetIsActive(c *gin.Context) {
 	})
 }
 
-// toHandlerUser конвертирует service.User в handler.User
-func toHandlerUser(s users.User) User {
-	return User{
-		UserID:   s.UserID,
+// toHandlerUser конвертирует service.User в models.User
+func toHandlerUser(s users.User) models.User {
+	return models.User{
+		UserId:   s.UserID,
 		Username: s.Username,
 		TeamName: s.TeamName,
 		IsActive: s.IsActive,
