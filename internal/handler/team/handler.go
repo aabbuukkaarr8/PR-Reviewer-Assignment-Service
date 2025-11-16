@@ -1,12 +1,10 @@
 package team
 
-// Handler структура для обработчиков команд
 type Handler struct {
-	service TeamService
+	service ServiceTeam
 }
 
-// NewHandler создает новый Handler
-func NewHandler(service TeamService) *Handler {
+func NewHandler(service ServiceTeam) *Handler {
 	return &Handler{
 		service: service,
 	}

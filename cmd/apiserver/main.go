@@ -7,15 +7,15 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/aabbuukkaarr8/PRService/internal/apiserver"
-	pullrequests3 "github.com/aabbuukkaarr8/PRService/internal/handler/pullrequests"
-	team3 "github.com/aabbuukkaarr8/PRService/internal/handler/team"
-	users3 "github.com/aabbuukkaarr8/PRService/internal/handler/users"
-	"github.com/aabbuukkaarr8/PRService/internal/repository/pullrequests"
-	"github.com/aabbuukkaarr8/PRService/internal/repository/team"
-	"github.com/aabbuukkaarr8/PRService/internal/repository/users"
-	pullrequests2 "github.com/aabbuukkaarr8/PRService/internal/service/pullrequests"
-	team2 "github.com/aabbuukkaarr8/PRService/internal/service/team"
-	users2 "github.com/aabbuukkaarr8/PRService/internal/service/users"
+	prapi "github.com/aabbuukkaarr8/PRService/internal/handler/pullrequest"
+	teamapi "github.com/aabbuukkaarr8/PRService/internal/handler/team"
+	userapi "github.com/aabbuukkaarr8/PRService/internal/handler/user"
+	prrepo "github.com/aabbuukkaarr8/PRService/internal/repository/pullrequest"
+	teamrepo "github.com/aabbuukkaarr8/PRService/internal/repository/team"
+	userrepo "github.com/aabbuukkaarr8/PRService/internal/repository/user"
+	prsrv "github.com/aabbuukkaarr8/PRService/internal/service/pullrequest"
+	teamsrv "github.com/aabbuukkaarr8/PRService/internal/service/team"
+	usersrv "github.com/aabbuukkaarr8/PRService/internal/service/user"
 	"github.com/aabbuukkaarr8/PRService/internal/store"
 )
 
@@ -47,19 +47,19 @@ func main() {
 		return
 	}
 	//repo
-	teamRepo := team.NewRepository(db)
-	userRepo := users.NewRepository(db)
-	prRepo := pullrequests.NewRepository(db)
+	teamRepo := teamrepo.NewRepository(db)
+	userRepo := userrepo.NewRepository(db)
+	prRepo := prrepo.NewRepository(db)
 
 	//srv
-	teamSrv := team2.NewService(teamRepo)
-	userSrv := users2.NewService(userRepo)
-	prSrv := pullrequests2.NewService(prRepo)
+	teamSrv := teamsrv.NewService(teamRepo)
+	userSrv := usersrv.NewService(userRepo)
+	prSrv := prsrv.NewService(prRepo)
 
 	//handler
-	teamHandler := team3.NewHandler(teamSrv)
-	userHandler := users3.NewHandler(userSrv)
-	prHandler := pullrequests3.NewHandler(prSrv)
+	teamHandler := teamapi.NewHandler(teamSrv)
+	userHandler := userapi.NewHandler(userSrv)
+	prHandler := prapi.NewHandler(prSrv)
 
 	s := apiserver.New(config)
 	s.ConfigureRouter(teamHandler, userHandler, prHandler)

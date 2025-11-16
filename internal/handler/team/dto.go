@@ -1,23 +1,56 @@
 package team
 
 import (
-	"github.com/aabbuukkaarr8/PRService/internal/api/models"
+	teamsrv "github.com/aabbuukkaarr8/PRService/internal/service/team"
 )
 
-// CreateTeamRequest - запрос на создание команды
-type CreateTeamRequest struct {
-	models.Team
+type MemberTeam struct {
+	UserID   string `json:"user_id" binding:"required"`
+	Username string `json:"username" binding:"required"`
+	IsActive bool   `json:"is_active" binding:"required"`
 }
 
-// CreateTeamResponse - ответ при успешном создании команды
+type Team struct {
+	TeamName string       `json:"team_name" binding:"required"`
+	Members  []MemberTeam `json:"members" binding:"required,dive"`
+}
+
+type CreateTeamRequest = Team
+
 type CreateTeamResponse struct {
-	Team models.Team `json:"team"`
+	Team Team `json:"team"`
 }
 
-// GetTeamResponse - ответ при получении команды
 type GetTeamResponse struct {
-	Team models.Team `json:"team"`
+	Team Team `json:"team"`
 }
 
-// ErrorResponse соответствует схеме ErrorResponse из OpenAPI
-type ErrorResponse = models.ErrorResponse
+func (t *Team) ToService() teamsrv.Team {
+	members := make([]teamsrv.TeamMember, len(t.Members))
+	for i, m := range t.Members {
+		members[i] = teamsrv.TeamMember{
+			UserID:   m.UserID,
+			Username: m.Username,
+			IsActive: m.IsActive,
+		}
+	}
+
+	return teamsrv.Team{
+		TeamName: t.TeamName,
+		Members:  members,
+	}
+}
+
+func (t *Team) FillFromService(s teamsrv.Team) {
+	members := make([]MemberTeam, len(s.Members))
+	for i, m := range s.Members {
+		members[i] = MemberTeam{
+			UserID:   m.UserID,
+			Username: m.Username,
+			IsActive: m.IsActive,
+		}
+	}
+
+	t.TeamName = s.TeamName
+	t.Members = members
+}

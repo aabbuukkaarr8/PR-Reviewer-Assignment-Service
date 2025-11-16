@@ -4,8 +4,8 @@ CREATE TABLE pullrequests (
     author_id TEXT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
     status TEXT NOT NULL CHECK (status IN ('OPEN', 'MERGED')),
     assigned_reviewers TEXT[] DEFAULT '{}',
-    "createdAt" TIMESTAMP,
-    "mergedAt" TIMESTAMP
+    created_at TIMESTAMP,
+    merged_at TIMESTAMP
 );
 
 CREATE INDEX idx_pullrequests_author_id ON pullrequests(author_id);

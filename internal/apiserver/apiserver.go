@@ -3,8 +3,8 @@ package apiserver
 import (
 	"net/http"
 
-	"github.com/aabbuukkaarr8/PRService/internal/handler/pullrequests"
-	"github.com/aabbuukkaarr8/PRService/internal/handler/users"
+	"github.com/aabbuukkaarr8/PRService/internal/handler/pullrequest"
+	"github.com/aabbuukkaarr8/PRService/internal/handler/user"
 
 	"github.com/aabbuukkaarr8/PRService/internal/handler/team"
 
@@ -47,7 +47,7 @@ func (s *APIServer) configLogger() error {
 	return nil
 }
 
-func (s *APIServer) ConfigureRouter(teamHandler *team.Handler, usersHandler *users.Handler, prHandler *pullrequests.Handler) {
+func (s *APIServer) ConfigureRouter(teamHandler *team.Handler, usersHandler *user.Handler, prHandler *pullrequest.Handler) {
 	s.router.POST("/team/add", teamHandler.CreateTeam)
 	s.router.GET("/team/get", teamHandler.GetTeam)
 	s.router.POST("/users/setIsActive", usersHandler.SetIsActive)

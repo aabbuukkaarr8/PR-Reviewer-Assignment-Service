@@ -12,15 +12,15 @@ import (
 	"time"
 
 	"github.com/aabbuukkaarr8/PRService/internal/apiserver"
-	pullrequestsHandler "github.com/aabbuukkaarr8/PRService/internal/handler/pullrequests"
+	pullrequestsHandler "github.com/aabbuukkaarr8/PRService/internal/handler/pullrequest"
 	teamHandler "github.com/aabbuukkaarr8/PRService/internal/handler/team"
-	usersHandler "github.com/aabbuukkaarr8/PRService/internal/handler/users"
-	"github.com/aabbuukkaarr8/PRService/internal/repository/pullrequests"
+	usersHandler "github.com/aabbuukkaarr8/PRService/internal/handler/user"
+	"github.com/aabbuukkaarr8/PRService/internal/repository/pullrequest"
 	"github.com/aabbuukkaarr8/PRService/internal/repository/team"
-	"github.com/aabbuukkaarr8/PRService/internal/repository/users"
-	pullrequestsService "github.com/aabbuukkaarr8/PRService/internal/service/pullrequests"
+	"github.com/aabbuukkaarr8/PRService/internal/repository/user"
+	pullrequestsService "github.com/aabbuukkaarr8/PRService/internal/service/pullrequest"
 	teamService "github.com/aabbuukkaarr8/PRService/internal/service/team"
-	usersService "github.com/aabbuukkaarr8/PRService/internal/service/users"
+	usersService "github.com/aabbuukkaarr8/PRService/internal/service/user"
 	"github.com/aabbuukkaarr8/PRService/internal/store"
 	_ "github.com/lib/pq"
 )
@@ -67,8 +67,8 @@ func setup() {
 	config.LogLevel = "error"
 
 	teamRepo := team.NewRepository(testStore)
-	userRepo := users.NewRepository(testStore)
-	prRepo := pullrequests.NewRepository(testStore)
+	userRepo := user.NewRepository(testStore)
+	prRepo := pullrequest.NewRepository(testStore)
 
 	teamSrv := teamService.NewService(teamRepo)
 	userSrv := usersService.NewService(userRepo)
@@ -113,8 +113,8 @@ func runMigrations(db *sql.DB) error {
 			author_id TEXT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
 			status TEXT NOT NULL CHECK (status IN ('OPEN', 'MERGED')),
 			assigned_reviewers TEXT[] DEFAULT '{}',
-			"createdAt" TIMESTAMP,
-			"mergedAt" TIMESTAMP
+			created_at TIMESTAMP,
+			merged_at TIMESTAMP
 		)`,
 		`CREATE INDEX IF NOT EXISTS idx_pullrequests_author_id ON pullrequests(author_id)`,
 		`CREATE INDEX IF NOT EXISTS idx_pullrequests_status ON pullrequests(status)`,
@@ -455,7 +455,7 @@ func TestE2E_ReassignReviewer(t *testing.T) {
 
 	reassignData := map[string]interface{}{
 		"pull_request_id": "pr-1001",
-		"old_reviewer_id": "u2",
+		"old_user_id":     "u2",
 	}
 
 	body, _ = json.Marshal(reassignData)

@@ -1,4 +1,4 @@
-package team
+package pullrequest
 
 import (
 	"errors"
@@ -6,27 +6,28 @@ import (
 
 	"github.com/aabbuukkaarr8/PRService/internal/api"
 	"github.com/aabbuukkaarr8/PRService/internal/api/models"
-	teamsrv "github.com/aabbuukkaarr8/PRService/internal/service/team"
+	prsrv "github.com/aabbuukkaarr8/PRService/internal/service/pullrequest"
 	"github.com/gin-gonic/gin"
 )
 
-func (h *Handler) GetTeam(c *gin.Context) {
-	teamName := c.Query("team_name")
-	if teamName == "" {
+func (h *Handler) MergePullRequest(c *gin.Context) {
+	var req MergeRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
 		api.SendError(c, http.StatusBadRequest, api.Error{
 			Code:    "INVALID_REQUEST",
-			Message: "team_name parameter is required",
+			Message: err.Error(),
 		})
 		return
 	}
 
-	resultTeam, err := h.service.GetTeam(c.Request.Context(), teamName)
+	resultPR, err := h.service.MergePullRequest(c.Request.Context(), req.PullRequestID)
 	if err != nil {
 		switch {
-		case errors.Is(err, teamsrv.ErrTeamNotFound):
+		case errors.Is(err, prsrv.ErrNotFound):
 			api.SendError(c, http.StatusNotFound, api.Error{
 				Code:    models.NOTFOUND,
-				Message: "team not found",
+				Message: "PR not found",
 			})
 		default:
 			api.SendError(c, http.StatusInternalServerError, api.Error{
@@ -37,10 +38,9 @@ func (h *Handler) GetTeam(c *gin.Context) {
 		return
 	}
 
-	var handlerTeam Team
-	handlerTeam.FillFromService(resultTeam)
+	handlerPR := toHandlerPullRequest(resultPR)
 
-	api.SendOk(c, GetTeamResponse{
-		Team: handlerTeam,
+	api.SendOk(c, MergePullRequestResponse{
+		PR: handlerPR,
 	})
 }

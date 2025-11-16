@@ -6,13 +6,6 @@ import (
 	"github.com/aabbuukkaarr8/PRService/internal/repository/team"
 )
 
-// RepoUser структура пользователя из repository (для передачи данных между repository и service)
-type RepoUser struct {
-	UserID   string
-	Username string
-	IsActive bool
-}
-
 type Repo interface {
 	// TeamExists проверяет, существует ли команда
 	TeamExists(ctx context.Context, teamName string) (bool, error)
