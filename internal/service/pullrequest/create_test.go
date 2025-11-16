@@ -69,6 +69,43 @@ func (m *mockRepo) UpdatePullRequestReviewers(ctx context.Context, pullRequestID
 	return args.Get(0).(prrepo.PullRequest), args.Error(1)
 }
 
+func (m *mockRepo) GetReviewerStats(ctx context.Context) ([]prrepo.ReviewerStats, error) {
+	args := m.Called(ctx)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]prrepo.ReviewerStats), args.Error(1)
+}
+
+func (m *mockRepo) GetPRStats(ctx context.Context) (prrepo.PRStats, error) {
+	args := m.Called(ctx)
+	if args.Get(0) == nil {
+		return prrepo.PRStats{}, args.Error(1)
+	}
+	return args.Get(0).(prrepo.PRStats), args.Error(1)
+}
+
+func (m *mockRepo) GetOpenPRsByReviewers(ctx context.Context, reviewerIDs []string) ([]prrepo.OpenPRWithReviewer, error) {
+	args := m.Called(ctx, reviewerIDs)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]prrepo.OpenPRWithReviewer), args.Error(1)
+}
+
+func (m *mockRepo) BulkDeactivateTeamUsers(ctx context.Context, teamName string) ([]string, error) {
+	args := m.Called(ctx, teamName)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]string), args.Error(1)
+}
+
+func (m *mockRepo) BulkUpdatePullRequestReviewers(ctx context.Context, updates []prrepo.PRReviewerUpdate) error {
+	args := m.Called(ctx, updates)
+	return args.Error(0)
+}
+
 func TestService_CreatePullRequest(t *testing.T) {
 	tests := []struct {
 		name           string

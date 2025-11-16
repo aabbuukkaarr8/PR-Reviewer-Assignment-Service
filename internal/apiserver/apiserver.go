@@ -55,8 +55,14 @@ func (s *APIServer) ConfigureRouter(teamHandler *team.Handler, usersHandler *use
 	s.router.POST("/pullRequest/create", prHandler.CreatePullRequest)
 	s.router.POST("/pullRequest/merge", prHandler.MergePullRequest)
 	s.router.POST("/pullRequest/reassign", prHandler.ReassignReviewer)
+	s.router.GET("/stats", prHandler.GetStats)
+	s.router.POST("/team/bulkDeactivate", prHandler.BulkDeactivateTeamUsers)
 }
 
 func (s *APIServer) GetRouter() *gin.Engine {
 	return s.router
+}
+
+func (s *APIServer) GetLogger() *logrus.Logger {
+	return s.logger
 }

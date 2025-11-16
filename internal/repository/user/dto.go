@@ -1,6 +1,5 @@
 package user
 
-// User структура пользователя для repository слоя
 type User struct {
 	UserID   string
 	Username string
@@ -8,10 +7,9 @@ type User struct {
 	IsActive bool
 }
 
-// PullRequestShort короткая версия PR для списков
 type PullRequestShort struct {
 	PullRequestID   string
 	PullRequestName string
 	AuthorID        string
-	Status          string // OPEN or MERGED
+	Status          string
 }

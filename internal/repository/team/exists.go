@@ -2,7 +2,6 @@ package team
 
 import "context"
 
-// TeamExists проверяет, существует ли команда
 func (r *Repository) TeamExists(ctx context.Context, teamName string) (bool, error) {
 	var exists bool
 	err := r.store.GetConn().QueryRowContext(ctx,
@@ -14,7 +13,6 @@ func (r *Repository) TeamExists(ctx context.Context, teamName string) (bool, err
 	return exists, nil
 }
 
-// UserExists проверяет, существует ли пользователь
 func (r *Repository) UserExists(ctx context.Context, userID string) (bool, error) {
 	var exists bool
 	err := r.store.GetConn().QueryRowContext(ctx,

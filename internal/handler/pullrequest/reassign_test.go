@@ -14,6 +14,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/sirupsen/logrus"
 )
 
 func TestHandler_ReassignReviewer(t *testing.T) {
@@ -231,8 +232,11 @@ func TestHandler_ReassignReviewer(t *testing.T) {
 			mockSvc := new(mockService)
 			tt.setupMock(mockSvc)
 
+			logger := logrus.New()
+			logger.SetLevel(logrus.ErrorLevel)
 			handler := &Handler{
 				service: mockSvc,
+				logger:  logger,
 			}
 
 			router := gin.New()

@@ -5,9 +5,7 @@ import (
 	"database/sql"
 )
 
-// GetTeam получает команду с участниками
 func (r *Repository) GetTeam(ctx context.Context, teamName string) (string, []User, error) {
-	// Проверяем существование команды
 	var exists bool
 	err := r.store.GetConn().QueryRowContext(ctx,
 		"SELECT EXISTS(SELECT 1 FROM teams WHERE team_name = $1)",
@@ -19,7 +17,6 @@ func (r *Repository) GetTeam(ctx context.Context, teamName string) (string, []Us
 		return "", nil, sql.ErrNoRows
 	}
 
-	// Получаем всех пользователей команды
 	rows, err := r.store.GetConn().QueryContext(ctx,
 		"SELECT user_id, username, is_active FROM users WHERE team_name = $1",
 		teamName)

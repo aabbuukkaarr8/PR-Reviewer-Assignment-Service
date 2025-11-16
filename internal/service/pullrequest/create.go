@@ -16,7 +16,6 @@ var (
 	ErrNotFound = errors.New("NOT_FOUND")
 )
 
-// CreatePullRequest создает PR и автоматически назначает до 2 ревьюверов из команды автора
 func (s *Service) CreatePullRequest(ctx context.Context, req CreatePullRequest) (PullRequest, error) {
 	exists, err := s.repo.PRExists(ctx, req.PullRequestId)
 	if err != nil {
@@ -39,7 +38,6 @@ func (s *Service) CreatePullRequest(ctx context.Context, req CreatePullRequest) 
 		return PullRequest{}, err
 	}
 
-	// 4. Выбрать до 2 ревьюверов случайным образом
 	assignedReviewers := selectRandomReviewers(teamMembers, 2)
 
 	reqToDB := req.ToDB()
@@ -62,7 +60,6 @@ func selectRandomReviewers(members []user.User, maxReviewers int) []string {
 		return []string{}
 	}
 
-	// Если участников меньше или равно maxReviewers, возвращаем всех
 	if len(members) <= maxReviewers {
 		result := make([]string, len(members))
 		for i, member := range members {
@@ -74,7 +71,6 @@ func selectRandomReviewers(members []user.User, maxReviewers int) []string {
 	shuffled := make([]user.User, len(members))
 	copy(shuffled, members)
 
-	// Перемешиваем случайным образом
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	r.Shuffle(len(shuffled), func(i, j int) {
 		shuffled[i], shuffled[j] = shuffled[j], shuffled[i]

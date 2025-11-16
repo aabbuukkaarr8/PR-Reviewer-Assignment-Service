@@ -30,6 +30,7 @@ func (h *Handler) SetIsActive(c *gin.Context) {
 				Message: "user not found",
 			})
 		default:
+			h.logger.WithError(err).WithField("user_id", req.UserID).Error("Failed to set user active status")
 			api.SendError(c, http.StatusInternalServerError, api.Error{
 				Code:    "INTERNAL_ERROR",
 				Message: err.Error(),

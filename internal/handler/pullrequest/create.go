@@ -47,6 +47,7 @@ func (h *Handler) CreatePullRequest(c *gin.Context) {
 				Message: "author or team not found",
 			})
 		default:
+			h.logger.WithError(err).WithField("pull_request_id", req.PullRequestID).Error("Failed to create PR")
 			api.SendError(c, http.StatusInternalServerError, api.Error{
 				Code:    "INTERNAL_ERROR",
 				Message: err.Error(),

@@ -30,6 +30,7 @@ func (h *Handler) MergePullRequest(c *gin.Context) {
 				Message: "PR not found",
 			})
 		default:
+			h.logger.WithError(err).WithField("pull_request_id", req.PullRequestID).Error("Failed to merge PR")
 			api.SendError(c, http.StatusInternalServerError, api.Error{
 				Code:    "INTERNAL_ERROR",
 				Message: err.Error(),

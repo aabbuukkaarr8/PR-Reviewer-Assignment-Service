@@ -30,7 +30,7 @@ type MergePullRequestResponse struct {
 
 type ReassignReviewerRequest struct {
 	PullRequestID string `json:"pull_request_id" binding:"required"`
-	OldUserID     string `json:"old_user_id" binding:"required"`
+	OldUserID     string `json:"old_reviewer_id" binding:"required"`
 }
 
 type ReassignReviewerResponse struct {

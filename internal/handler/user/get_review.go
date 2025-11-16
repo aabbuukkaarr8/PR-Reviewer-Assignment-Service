@@ -29,6 +29,7 @@ func (h *Handler) GetReview(c *gin.Context) {
 				Message: "user not found",
 			})
 		default:
+			h.logger.WithError(err).WithField("user_id", userID).Error("Failed to get user reviews")
 			api.SendError(c, http.StatusInternalServerError, api.Error{
 				Code:    "INTERNAL_ERROR",
 				Message: err.Error(),

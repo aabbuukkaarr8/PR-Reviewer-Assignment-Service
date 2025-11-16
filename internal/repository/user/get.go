@@ -5,7 +5,6 @@ import (
 	"database/sql"
 )
 
-// GetUser получает пользователя по user_id
 func (r *Repository) GetUser(ctx context.Context, userID string) (User, error) {
 	var user User
 

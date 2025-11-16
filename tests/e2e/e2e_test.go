@@ -23,6 +23,7 @@ import (
 	usersService "github.com/aabbuukkaarr8/PRService/internal/service/user"
 	"github.com/aabbuukkaarr8/PRService/internal/store"
 	_ "github.com/lib/pq"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -74,9 +75,12 @@ func setup() {
 	userSrv := usersService.NewService(userRepo)
 	prSrv := pullrequestsService.NewService(prRepo)
 
-	teamHndlr := teamHandler.NewHandler(teamSrv)
-	userHndlr := usersHandler.NewHandler(userSrv)
-	prHndlr := pullrequestsHandler.NewHandler(prSrv)
+	logger := logrus.New()
+	logger.SetLevel(logrus.ErrorLevel)
+
+	teamHndlr := teamHandler.NewHandler(teamSrv, logger)
+	userHndlr := usersHandler.NewHandler(userSrv, logger)
+	prHndlr := pullrequestsHandler.NewHandler(prSrv, logger)
 
 	s := apiserver.New(config)
 	s.ConfigureRouter(teamHndlr, userHndlr, prHndlr)
@@ -450,18 +454,42 @@ func TestE2E_ReassignReviewer(t *testing.T) {
 	body, _ = json.Marshal(prData)
 	req, _ = http.NewRequest("POST", testServer.URL+"/pullRequest/create", bytes.NewBuffer(body))
 	req.Header.Set("Content-Type", "application/json")
-	resp, _ = client.Do(req)
-	resp.Body.Close()
+	resp, err := client.Do(req)
+	if err != nil {
+		t.Fatalf("Failed to create PR: %v", err)
+	}
+	defer resp.Body.Close()
+
+	var createResult map[string]interface{}
+	if err = json.NewDecoder(resp.Body).Decode(&createResult); err != nil {
+		t.Fatalf("Failed to decode create PR response: %v", err)
+	}
+
+	var oldReviewerID string
+	if pr, ok := createResult["pr"].(map[string]interface{}); ok {
+		if assignedReviewers, ok := pr["assigned_reviewers"].([]interface{}); ok && len(assignedReviewers) > 0 {
+			for _, reviewer := range assignedReviewers {
+				if reviewerID, ok := reviewer.(string); ok && reviewerID != "u1" {
+					oldReviewerID = reviewerID
+					break
+				}
+			}
+		}
+	}
+
+	if oldReviewerID == "" {
+		oldReviewerID = "u2"
+	}
 
 	reassignData := map[string]interface{}{
-		"pull_request_id": "pr-1001",
-		"old_user_id":     "u2",
+		"pull_request_id":  "pr-1001",
+		"old_reviewer_id":  oldReviewerID,
 	}
 
 	body, _ = json.Marshal(reassignData)
 	req, _ = http.NewRequest("POST", testServer.URL+"/pullRequest/reassign", bytes.NewBuffer(body))
 	req.Header.Set("Content-Type", "application/json")
-	resp, err := client.Do(req)
+	resp, err = client.Do(req)
 	if err != nil {
 		t.Fatalf("Failed to reassign reviewer: %v", err)
 	}

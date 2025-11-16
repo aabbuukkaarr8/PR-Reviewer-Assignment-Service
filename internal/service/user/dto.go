@@ -9,15 +9,12 @@ type User struct {
 	IsActive bool
 }
 
-// PullRequestShort короткая версия PR для списков
 type PullRequestShort struct {
 	PullRequestID   string
 	PullRequestName string
 	AuthorID        string
-	Status          string // OPEN or MERGED
+	Status          string
 }
-
-// RepoUser структура пользователя из repository (для передачи данных между repository и service)
 
 func (m *User) FillFromDB(dbu *user.User) {
 	m.UserID = dbu.UserID

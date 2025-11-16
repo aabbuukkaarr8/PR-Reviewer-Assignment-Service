@@ -35,7 +35,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// Переменная окружения DATABASE_URL имеет приоритет над конфигом
 	if dbURL := os.Getenv("DATABASE_URL"); dbURL != "" {
 		config.Store.DatabaseURL = dbURL
 	}
@@ -46,22 +45,22 @@ func main() {
 		log.Fatal(err)
 		return
 	}
-	//repo
+
 	teamRepo := teamrepo.NewRepository(db)
 	userRepo := userrepo.NewRepository(db)
 	prRepo := prrepo.NewRepository(db)
 
-	//srv
 	teamSrv := teamsrv.NewService(teamRepo)
 	userSrv := usersrv.NewService(userRepo)
 	prSrv := prsrv.NewService(prRepo)
 
-	//handler
-	teamHandler := teamapi.NewHandler(teamSrv)
-	userHandler := userapi.NewHandler(userSrv)
-	prHandler := prapi.NewHandler(prSrv)
-
 	s := apiserver.New(config)
+	logger := s.GetLogger()
+
+	teamHandler := teamapi.NewHandler(teamSrv, logger)
+	userHandler := userapi.NewHandler(userSrv, logger)
+	prHandler := prapi.NewHandler(prSrv, logger)
+
 	s.ConfigureRouter(teamHandler, userHandler, prHandler)
 
 	if err := s.Run(); err != nil {

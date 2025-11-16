@@ -32,6 +32,7 @@ func (h *Handler) CreateTeam(c *gin.Context) {
 				Message: "team_name already exists",
 			})
 		default:
+			h.logger.WithError(err).WithField("team_name", req.TeamName).Error("Failed to create team")
 			api.SendError(c, http.StatusInternalServerError, api.Error{
 				Code:    "INTERNAL_ERROR",
 				Message: err.Error(),

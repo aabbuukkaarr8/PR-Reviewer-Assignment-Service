@@ -29,6 +29,7 @@ func (h *Handler) GetTeam(c *gin.Context) {
 				Message: "team not found",
 			})
 		default:
+			h.logger.WithError(err).WithField("team_name", teamName).Error("Failed to get team")
 			api.SendError(c, http.StatusInternalServerError, api.Error{
 				Code:    "INTERNAL_ERROR",
 				Message: err.Error(),

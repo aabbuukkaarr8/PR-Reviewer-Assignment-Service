@@ -8,7 +8,6 @@ import (
 	"github.com/aabbuukkaarr8/PRService/internal/repository/user"
 )
 
-// GetUser получает пользователя по user_id (используем repository/user)
 func (r *Repository) GetUser(ctx context.Context, userID string) (user.User, error) {
 	var user user.User
 

@@ -15,6 +15,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/sirupsen/logrus"
 )
 
 type mockService struct {
@@ -43,6 +44,22 @@ func (m *mockService) ReassignReviewer(ctx context.Context, pullRequestID, oldUs
 		return prsrv.PullRequest{}, "", args.Error(2)
 	}
 	return args.Get(0).(prsrv.PullRequest), args.String(1), args.Error(2)
+}
+
+func (m *mockService) GetStats(ctx context.Context) (prsrv.Stats, error) {
+	args := m.Called(ctx)
+	if args.Get(0) == nil {
+		return prsrv.Stats{}, args.Error(1)
+	}
+	return args.Get(0).(prsrv.Stats), args.Error(1)
+}
+
+func (m *mockService) BulkDeactivateTeamUsers(ctx context.Context, teamName string) (prsrv.BulkDeactivateResult, error) {
+	args := m.Called(ctx, teamName)
+	if args.Get(0) == nil {
+		return prsrv.BulkDeactivateResult{}, args.Error(1)
+	}
+	return args.Get(0).(prsrv.BulkDeactivateResult), args.Error(1)
 }
 
 func TestHandler_CreatePullRequest(t *testing.T) {
@@ -247,8 +264,11 @@ func TestHandler_CreatePullRequest(t *testing.T) {
 			mockSvc := new(mockService)
 			tt.setupMock(mockSvc)
 
+			logger := logrus.New()
+			logger.SetLevel(logrus.ErrorLevel)
 			handler := &Handler{
 				service: mockSvc,
+				logger:  logger,
 			}
 
 			router := gin.New()

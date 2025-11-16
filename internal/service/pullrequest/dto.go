@@ -6,12 +6,11 @@ import (
 	prrepo "github.com/aabbuukkaarr8/PRService/internal/repository/pullrequest"
 )
 
-// PullRequest структура PR для service слоя
 type PullRequest struct {
 	PullRequestID     string
 	PullRequestName   string
 	AuthorID          string
-	Status            string // OPEN or MERGED
+	Status            string
 	AssignedReviewers []string
 	CreatedAt         *time.Time
 	MergedAt          *time.Time
@@ -23,7 +22,6 @@ type CreatePullRequest struct {
 	PullRequestName string
 }
 
-// FillFromDB конвертирует repository.PullRequest в service.PullRequest
 func (m *PullRequest) FillFromDB(dbp *prrepo.PullRequest) {
 	m.PullRequestID = dbp.PullRequestID
 	m.PullRequestName = dbp.PullRequestName

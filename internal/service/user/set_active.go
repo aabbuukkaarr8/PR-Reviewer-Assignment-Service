@@ -10,7 +10,6 @@ var (
 	ErrUserNotFound = errors.New("NOT_FOUND")
 )
 
-// SetIsActive устанавливает флаг активности пользователя
 func (s *Service) SetIsActive(ctx context.Context, userID string, isActive bool) (User, error) {
 	repoUser, err := s.repo.GetUser(ctx, userID)
 	if err != nil {

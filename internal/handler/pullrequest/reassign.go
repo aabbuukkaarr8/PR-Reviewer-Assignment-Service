@@ -45,6 +45,10 @@ func (h *Handler) ReassignReviewer(c *gin.Context) {
 				Message: "no active replacement candidate in team",
 			})
 		default:
+			h.logger.WithError(err).WithFields(map[string]interface{}{
+				"pull_request_id": req.PullRequestID,
+				"old_reviewer_id": req.OldUserID,
+			}).Error("Failed to reassign reviewer")
 			api.SendError(c, http.StatusInternalServerError, api.Error{
 				Code:    "INTERNAL_ERROR",
 				Message: err.Error(),
